@@ -1,0 +1,41 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+</head>
+<body>
+</body>
+<script>
+    window.onload = () => {
+        getUserName();
+    }
+
+    function getUserName() {
+        let username = null;
+        while(username == null){
+            username = window.prompt('Please Enter Your Name');
+        }
+        addUser(username);
+    }
+
+    function addUser(username) {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange=function() {
+            if (this.readyState == 4 && this.status == 200){
+                console.log(this.responseText);
+                if(this.responseText == -1){
+                    alert('Name is already in use');
+                    getUserName();
+                }
+                else {
+                    window.location = '/avatar/' + username;
+                }
+            }
+        };
+        xhttp.open('POST', '/addname');
+        xhttp.setRequestHeader('Content-Type', 'application/json');
+        xhttp.send(JSON.stringify({name: username}));
+    }
+</script>
+</html>

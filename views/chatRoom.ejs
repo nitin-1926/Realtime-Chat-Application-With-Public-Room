@@ -1,0 +1,141 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <title>Chat Room</title>
+    <style>
+        .container{
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #msgInputBox{
+            height: 8%;
+        }
+        #messageArea{
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            height: 500px;
+            width: 500px;
+            overflow-y: scroll;
+        }
+        .messageBody{
+            font-size: 20px;
+            padding: 5px;
+            border-radius: 5%;
+            text-align: center;
+            background-color: #DCF8C6;
+        }
+        .messageTime{
+            font-size: 12px;
+            font-weight: 500;
+            background-color: azure;
+        }
+    </style>
+</head>
+<body>
+    <p id="username" style="display: none;"><%= name %></p>
+    <div class="main">
+        <div class="container">
+            <% if(isRoomOwner){ %>
+                <h3>Welcome to <%= name %>'s <br> Chat Room</h3>
+            <% } %>
+            <div class="flex-box">
+                <div class="col-12">
+                    <div id="messageArea">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="flex-box">
+                <div class="col-12">
+                    <% if(isRoomOwner){ %>
+                        <input type="text" id="msgInputBox" placeholder="Enter Message" /><br>
+                        <button class="btn btn-success ml-2 mt-2" onclick="sendMessage()">Send</button>
+                        <button class="btn btn-danger ml-2 mt-2" onclick="exitRoom()">Exit Room</button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@2.2.0/dist/socket.io.js"></script>
+<script>
+
+    window.onload = () => {
+        getMessages();
+    }
+
+    const socket = io.connect();
+    const username = document.getElementById('username').innerHTML;
+    const messageArea = document.getElementById('messageArea');
+    function sendMessage() {
+        const message = document.getElementById('msgInputBox').value;
+        const msgDate = new Date();
+        socket.emit('newMessage', {
+            msg: message,
+            date: {
+                hour: msgDate.getHours(),
+                min: msgDate.getMinutes(),
+                sec: msgDate.getSeconds(),
+            },
+        })
+    }
+    socket.on('newMessageReceived', (newMsg) => {
+        addToDom(newMsg);
+    })
+
+    function exitRoom() {
+        socket.emit('roomDestroyed');
+    }
+    socket.on('redirectToAvatar', () => {
+        
+        window.location = '/avatar/' + username;
+    });
+
+    function addToDom(message) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', 'mb-3');
+
+        const brEle = document.createElement('br');
+
+        const msgBody = document.createElement('span');
+        msgBody.classList.add('messageBody');
+        msgBody.innerHTML = message.msg;
+
+        const msgTimeDiv = document.createElement('label');
+        msgTimeDiv.classList.add('messageTime', 'mt-1');
+
+        const innerLabel = document.createElement('label');
+        innerLabel.innerHTML = `Sent on: ${message.date.hour} hrs ${message.date.min} mins ${message.date.sec} sec`;
+        msgTimeDiv.appendChild(innerLabel);
+
+        msgDiv.appendChild(msgBody);
+        msgDiv.appendChild(brEle);
+        msgDiv.appendChild(msgTimeDiv);
+
+        messageArea.appendChild(msgDiv);
+    }
+
+    function getMessages() {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange=function() {
+            if (this.readyState == 4 && this.status == 200){
+                console.log(JSON.parse(this.responseText));
+                const messages = JSON.parse(this.responseText);
+                for(let i=0; i<messages.length; i++) {
+                    addToDom(messages[i]);
+                }
+            }
+        };
+        xhttp.open('GET', '/getAllMessages');
+        xhttp.setRequestHeader('Content-Type', 'application/json');
+        xhttp.send();
+    }
+
+</script>
+</html>

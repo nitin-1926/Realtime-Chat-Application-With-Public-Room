@@ -1,0 +1,27 @@
+.container{
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#msgInputBox{
+    height: 8%;
+}
+#messageArea{
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    height: 500px;
+    width: 500px;
+    overflow-y: scroll;
+}
+.messageBody{
+    font-size: 20px;
+    padding: 5px;
+    border-radius: 5%;
+    text-align: center;
+    background-color: #DCF8C6;
+}
+.messageTime{
+    font-size: 12px;
+    font-weight: 500;
+    background-color: azure;
+}
